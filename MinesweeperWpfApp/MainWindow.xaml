@@ -18,15 +18,6 @@
             <Button Content="Restart"
                     Click="RestartButton_Click"
                     Margin="5"/>
-            <TextBox x:Name="TextBoxX"
-                     Width="50"
-                     Margin="5"/>
-            <TextBox x:Name="TextBoxY"
-                     Width="50"
-                     Margin="5"/>
-            <Button Content="Check"
-                    Click="ButtonCheck_Click"
-                    Margin="5"/>
         </StackPanel>
 
         <Grid x:Name="MinesweeperBoardGrid"
