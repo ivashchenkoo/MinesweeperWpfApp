@@ -34,6 +34,9 @@ namespace MinesweeperModel
 		public bool IsBoardComplete { get => SafeCellsNumber == GetOpenedCellsCount(); }
 
 		// constructor
+		public MinesweeperBoard(Difficulty difficulty) : this(difficulty.Width, difficulty.Height, difficulty.MinesNumber) { }
+
+		// constructor
 		public MinesweeperBoard(int width, int height, int minesNumber)
 		{
 			if (width <= 0 || height <= 0 || minesNumber <= 0)
