@@ -55,12 +55,12 @@ namespace MinesweeperModel
 			}
 
 			// create the 2D array of the type Cell
-			Grid = new Cell[Width, Height];
+			Grid = new Cell[Height, Width];
 
 			// fill the 2D array with cells, each with unique x and y coordinates
-			for (int i = 0; i < Width; i++)
+			for (int i = 0; i < Height; i++)
 			{
-				for (int j = 0; j < Height; j++)
+				for (int j = 0; j < Width; j++)
 				{
 					Grid[i, j] = new Cell(i, j);
 				}
@@ -81,8 +81,8 @@ namespace MinesweeperModel
 			for (int i = 0; i < MinesNumber; i++)
 			{
 				// generate random x and y coordinates
-				int x = random.Next(Width);
-				int y = random.Next(Height);
+				int x = random.Next(Height);
+				int y = random.Next(Width);
 
 				// regenarate coordinates if generated are not unique
 				if (Grid[x, y].HasMine)
@@ -96,9 +96,9 @@ namespace MinesweeperModel
 			}
 
 			// set the number of surrounding mines for each cell that does not have a mine
-			for (int i = 0; i < Width; i++)
+			for (int i = 0; i < Height; i++)
 			{
-				for (int j = 0; j < Height; j++)
+				for (int j = 0; j < Width; j++)
 				{
 					if (Grid[i, j].HasMine)
 					{
@@ -115,12 +115,12 @@ namespace MinesweeperModel
 						{
 							Grid[i, j].NumberOfMinesAround++;
 						}
-						if (Grid[i, j].ColumnNumber + 1 < Height && Grid[Grid[i, j].RowNumber - 1, Grid[i, j].ColumnNumber + 1].HasMine)
+						if (Grid[i, j].ColumnNumber + 1 < Width && Grid[Grid[i, j].RowNumber - 1, Grid[i, j].ColumnNumber + 1].HasMine)
 						{
 							Grid[i, j].NumberOfMinesAround++;
 						}
 					}
-					if (Grid[i, j].RowNumber + 1 < Width)
+					if (Grid[i, j].RowNumber + 1 < Height)
 					{
 						if (Grid[Grid[i, j].RowNumber + 1, Grid[i, j].ColumnNumber].HasMine)
 						{
@@ -130,7 +130,7 @@ namespace MinesweeperModel
 						{
 							Grid[i, j].NumberOfMinesAround++;
 						}
-						if (Grid[i, j].ColumnNumber + 1 < Height && Grid[Grid[i, j].RowNumber + 1, Grid[i, j].ColumnNumber + 1].HasMine)
+						if (Grid[i, j].ColumnNumber + 1 < Width && Grid[Grid[i, j].RowNumber + 1, Grid[i, j].ColumnNumber + 1].HasMine)
 						{
 							Grid[i, j].NumberOfMinesAround++;
 						}
@@ -139,7 +139,7 @@ namespace MinesweeperModel
 					{
 						Grid[i, j].NumberOfMinesAround++;
 					}
-					if (Grid[i, j].ColumnNumber + 1 < Height && Grid[Grid[i, j].RowNumber, Grid[i, j].ColumnNumber + 1].HasMine)
+					if (Grid[i, j].ColumnNumber + 1 < Width && Grid[Grid[i, j].RowNumber, Grid[i, j].ColumnNumber + 1].HasMine)
 					{
 						Grid[i, j].NumberOfMinesAround++;
 					}
@@ -183,19 +183,19 @@ namespace MinesweeperModel
 				{
 					OpenCell(Grid[currentCell.RowNumber - 1, currentCell.ColumnNumber - 1]);
 				}
-				if (currentCell.ColumnNumber + 1 < Height)
+				if (currentCell.ColumnNumber + 1 < Width)
 				{
 					OpenCell(Grid[currentCell.RowNumber - 1, currentCell.ColumnNumber + 1]);
 				}
 			}
-			if (currentCell.RowNumber + 1 < Width)
+			if (currentCell.RowNumber + 1 < Height)
 			{
 				OpenCell(Grid[currentCell.RowNumber + 1, currentCell.ColumnNumber]);
 				if (currentCell.ColumnNumber - 1 >= 0)
 				{
 					OpenCell(Grid[currentCell.RowNumber + 1, currentCell.ColumnNumber - 1]);
 				}
-				if (currentCell.ColumnNumber + 1 < Height)
+				if (currentCell.ColumnNumber + 1 < Width)
 				{
 					OpenCell(Grid[currentCell.RowNumber + 1, currentCell.ColumnNumber + 1]);
 				}
@@ -204,7 +204,7 @@ namespace MinesweeperModel
 			{
 				OpenCell(Grid[currentCell.RowNumber, currentCell.ColumnNumber - 1]);
 			}
-			if (currentCell.ColumnNumber + 1 < Height)
+			if (currentCell.ColumnNumber + 1 < Width)
 			{
 				OpenCell(Grid[currentCell.RowNumber, currentCell.ColumnNumber + 1]);
 			}
@@ -216,9 +216,9 @@ namespace MinesweeperModel
 		private void OpenCellsWithMines()
 		{
 			// go through all the cells
-			for (int i = 0; i < Width; i++)
+			for (int i = 0; i < Height; i++)
 			{
-				for (int j = 0; j < Height; j++)
+				for (int j = 0; j < Width; j++)
 				{
 					// check if there is a mine in the cell
 					if (Grid[i, j].HasMine)
@@ -240,9 +240,9 @@ namespace MinesweeperModel
 			int count = 0;
 
 			// go through all the cells
-			for (int i = 0; i < Width; i++)
+			for (int i = 0; i < Height; i++)
 			{
-				for (int j = 0; j < Height; j++)
+				for (int j = 0; j < Width; j++)
 				{
 					// increase the variable if the cell is open
 					if (Grid[i, j].IsOpen)
@@ -268,9 +268,9 @@ namespace MinesweeperModel
 			int m = 0;
 
 			// go through all the cells
-			for (int i = 0; i < Width; i++)
+			for (int i = 0; i < Height; i++)
 			{
-				for (int j = 0; j < Height; j++)
+				for (int j = 0; j < Width; j++)
 				{
 					// add the grid cell to the array if the cell contains mine
 					if (Grid[i, j].HasMine)
