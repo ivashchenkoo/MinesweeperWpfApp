@@ -36,10 +36,20 @@ namespace MinesweeperModel
 		// constructor
 		public MinesweeperBoard(int width, int height, int minesNumber)
 		{
+			if (width <= 0 || height <= 0 || minesNumber <= 0)
+			{
+				throw new ArgumentOutOfRangeException("The width, height and number of mines must be greater than zero!");
+			}
+
 			// initialize dimensions of the board
 			Width = width;
 			Height = height;
 			MinesNumber = minesNumber;
+
+			if (CellsNumber < MinesNumber)
+			{
+				throw new ArgumentOutOfRangeException("The mines number must not be greater than the total number of cells on the board!");
+			}
 
 			// create the 2D array of the type Cell
 			Grid = new Cell[Width, Height];
