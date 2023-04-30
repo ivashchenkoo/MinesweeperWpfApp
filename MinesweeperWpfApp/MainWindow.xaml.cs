@@ -18,45 +18,52 @@ namespace MinesweeperWpfApp
 		private readonly SolidColorBrush _defaultCellBrush = new SolidColorBrush(Color.FromRgb(221, 221, 221));
 		const int buttonSize = 20;
 
-	    private bool _gameOver;
+		private bool _gameOver;
 		private MinesweeperBoard board;
 		private Button[,] _buttons;
 
 		public MainWindow()
 		{
 			InitializeComponent();
-			RestartGame();
+
+			var difficulties = Difficulty.GetDefaultDifficulties();
+			DifficultyComboBox.ItemsSource = difficulties;
+			DifficultyComboBox.SelectedIndex = 0;
+
+			RestartGame((Difficulty)DifficultyComboBox.SelectedItem);
 		}
 
 		private void RestartButton_Click(object sender, RoutedEventArgs e)
 		{
-			RestartGame();
+			RestartGame((Difficulty)DifficultyComboBox.SelectedItem);
 		}
 
-		private void RestartGame()
+		private void RestartGame(int width, int height, int mines)
 		{
 			_gameOver = false;
-			board = new MinesweeperBoard(12, 12, 20);
+			board = new MinesweeperBoard(width, height, mines);
 			GenerateButtonGrid();
 		}
+
+		private void RestartGame(Difficulty difficulty) => RestartGame(difficulty.Width, difficulty.Height, difficulty.MinesNumber);
 
 		private void GenerateButtonGrid()
 		{
 			MinesweeperBoardGrid.Children.Clear();
 
-			_buttons = new Button[board.Width, board.Height];
+			_buttons = new Button[board.Height, board.Width];
 			Grid grid = new Grid();
-			for (int x = 0; x < board.Width; x++)
-			{
-				grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-			}
-			for (int y = 0; y < board.Height; y++)
+			for (int x = 0; x < board.Height; x++)
 			{
 				grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 			}
-			for (int i = 0; i < board.Width; i++)
+			for (int y = 0; y < board.Width; y++)
 			{
-				for (int j = 0; j < board.Height; j++)
+				grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+			}
+			for (int i = 0; i < board.Height; i++)
+			{
+				for (int j = 0; j < board.Width; j++)
 				{
 					_buttons[i, j] = new Button
 					{
@@ -81,9 +88,9 @@ namespace MinesweeperWpfApp
 
 		private void UpdateButtonsGrid()
 		{
-			for (int i = 0; i < board.Width; i++)
+			for (int i = 0; i < board.Height; i++)
 			{
-				for (int j = 0; j < board.Height; j++)
+				for (int j = 0; j < board.Width; j++)
 				{
 					if ((string)_buttons[i, j].Tag == "Mine")
 					{
@@ -168,9 +175,9 @@ namespace MinesweeperWpfApp
 		private void PrintBoard(MinesweeperBoard board)
 		{
 			Debug.WriteLine(CreateSeparator(board.Width + 1));
-			for (int i = 0; i < board.Width; i++)
+			for (int i = 0; i < board.Height; i++)
 			{
-				for (int j = 0; j < board.Height; j++)
+				for (int j = 0; j < board.Width; j++)
 				{
 					Debug.Write("|");
 					if (board.Grid[i, j].HasMine)
@@ -199,6 +206,11 @@ namespace MinesweeperWpfApp
 		private static string CreateSeparator(int verticalSeparatorsNumber)
 		{
 			return string.Join("---", new string('+', verticalSeparatorsNumber).ToCharArray());
+		}
+
+		private void DifficultyComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+		{
+
 		}
 	}
 }

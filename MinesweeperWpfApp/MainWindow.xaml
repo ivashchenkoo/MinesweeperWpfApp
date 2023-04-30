@@ -5,25 +5,147 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MinesweeperWpfApp"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow"
+        ResizeMode="CanResize"
+        Height="450"
+        Width="800"
+        SizeToContent="WidthAndHeight">
+
     <Grid>
+
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        
-        <StackPanel Orientation="Horizontal"
-                    Grid.Row="0"
-                    Margin="5">
-            <Button Content="Restart"
-                    Click="RestartButton_Click"
-                    Margin="5"/>
-        </StackPanel>
 
-        <Grid x:Name="MinesweeperBoardGrid"
-              Grid.Row="1">
-            
+        <!--Difficulty selection-->
+        <Grid Grid.Row="0"
+              Margin="5">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <ComboBox x:Name="DifficultyComboBox"
+                      Grid.Column="0"
+                      Grid.ColumnSpan="2"
+                      Grid.Row="0"
+                      Margin="5"
+                      SelectionChanged="DifficultyComboBox_SelectionChanged"
+                      DisplayMemberPath="Description">
+
+            </ComboBox>
+
         </Grid>
         
+        <Grid Grid.Row="0"
+              Margin="5">
+
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            
+            <TextBlock Margin="5"
+                       HorizontalAlignment="Right"
+                       VerticalAlignment="Center"
+                       Grid.Column="2"
+                       Grid.Row="0">
+                    Mines:
+            </TextBlock>
+
+            <TextBox x:Name="MinesTextBox"
+                     MinWidth="50"
+                     Margin="5"
+                     HorizontalAlignment="Left"
+                     VerticalAlignment="Center"
+                     Grid.Column="3"
+                     Grid.Row="0"/>
+
+            <TextBlock Margin="5"
+                       HorizontalAlignment="Right"
+                       VerticalAlignment="Center"
+                       Grid.Column="0"
+                       Grid.Row="1">
+                    Width:
+            </TextBlock>
+
+            <TextBox x:Name="WidthTextBox"
+                     MinWidth="50"
+                     Margin="5"
+                     HorizontalAlignment="Left"
+                     VerticalAlignment="Center"
+                     Grid.Column="1"
+                     Grid.Row="1"/>
+
+            <TextBlock Margin="5"
+                       HorizontalAlignment="Right"
+                       VerticalAlignment="Center"
+                       Grid.Column="2"
+                       Grid.Row="1">
+                    Height:
+            </TextBlock>
+
+            <TextBox x:Name="HeightTextBox"
+                     MinWidth="50"
+                     Margin="5"
+                     HorizontalAlignment="Left"
+                     VerticalAlignment="Center"
+                     Grid.Column="3"
+                     Grid.Row="1"/>
+
+        </Grid>
+
+        <!--Control panel-->
+        <StackPanel Orientation="Horizontal"
+                    Grid.Row="1"
+                    Margin="10,0"
+                    HorizontalAlignment="Center">
+
+            <TextBlock Width="75"
+                       Margin="5,0"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       TextAlignment="Center">
+                Mines
+            </TextBlock>
+
+            <Button Content="☺"
+                    Click="RestartButton_Click"
+                    Margin="5,0"/>
+
+            <TextBlock Width="75"
+                       Margin="5,0"
+                       HorizontalAlignment="Center"
+                       VerticalAlignment="Center"
+                       TextAlignment="Center">
+                Timer
+            </TextBlock>
+
+        </StackPanel>
+
+        <!--Game grid-->
+        <Grid x:Name="MinesweeperBoardGrid"
+              Grid.Row="2"
+              Margin="10"
+              HorizontalAlignment="Center">
+
+        </Grid>
+
     </Grid>
+
 </Window>
