@@ -1,9 +1,12 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using MinesweeperModel;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace MinesweeperWpfApp
 {
@@ -26,17 +29,43 @@ namespace MinesweeperWpfApp
 		{
 			InitializeComponent();
 
-			var difficulties = Difficulty.GetDefaultDifficulties();
-			DifficultyComboBox.ItemsSource = difficulties;
+			var standardDifficulties = Difficulty.GetDefaultDifficulties();
+			Difficulty[] difficulties = new Difficulty[standardDifficulties.Length + 1];
+			for (int i = 0; i < standardDifficulties.Length; i++)
+			{
+				difficulties[i] = standardDifficulties[i];
+            }
+			difficulties[standardDifficulties.Length] = new Difficulty
+			{
+				Description = "Custom",
+				Height = 12,
+				Width = 12,
+				MinesNumber = 20
+			};
+            DifficultyComboBox.ItemsSource = difficulties;
 			DifficultyComboBox.SelectedIndex = 0;
-
-			RestartGame((Difficulty)DifficultyComboBox.SelectedItem);
 		}
 
 		private void RestartButton_Click(object sender, RoutedEventArgs e)
 		{
-			RestartGame((Difficulty)DifficultyComboBox.SelectedItem);
-		}
+			Difficulty difficulty = (Difficulty)DifficultyComboBox.SelectedItem;
+
+			if (difficulty.Description == "Custom")
+			{
+                if (WidthTextBox.Text != string.Empty && HeightTextBox.Text != string.Empty && MinesTextBox.Text != string.Empty)
+                {
+                    difficulty.Width = int.Parse(WidthTextBox.Text);
+                    difficulty.Height = int.Parse(HeightTextBox.Text);
+                    difficulty.MinesNumber = int.Parse(MinesTextBox.Text);
+                }
+				else
+				{
+					return;
+				}
+            }
+
+            RestartGame(difficulty);
+        }
 
 		private void RestartGame(int width, int height, int mines)
 		{
@@ -210,7 +239,44 @@ namespace MinesweeperWpfApp
 
 		private void DifficultyComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
+            Difficulty difficulty = (Difficulty)DifficultyComboBox.SelectedItem;
 
-		}
-	}
+            if (difficulty.Description == "Custom")
+            {
+				// Show textboxes
+				return;
+            }
+
+            RestartGame(difficulty);
+        }
+
+        private void Dimension_TextChanged(object sender, TextChangedEventArgs e)
+        {
+			TextBox textBox = (TextBox)sender;
+            string text = Regex.Match(textBox.Text, "[0-9]+").Value;
+			if (int.TryParse(text, out int digits))
+            {
+                if (digits > 100)
+                {
+                    textBox.Text = "100";
+                    textBox.SelectionStart = textBox.Text.Length;
+                }
+                if (digits <= 0)
+                {
+                    textBox.Text = "1";
+                    textBox.SelectionStart = textBox.Text.Length;
+                }
+
+                if (WidthTextBox.Text != string.Empty && HeightTextBox.Text != string.Empty && MinesTextBox.Text != string.Empty)
+                {
+                    int width = int.Parse(WidthTextBox.Text);
+                    int height = int.Parse(HeightTextBox.Text);
+                    int mines = int.Parse(MinesTextBox.Text);
+                    int possibleMines = (int)Math.Ceiling(width * height * 0.4 + 0.5);
+                    MinesTextBox.Text = Math.Min(mines, possibleMines).ToString();
+                    textBox.SelectionStart = textBox.Text.Length;
+                }
+            }
+        }
+    }
 }

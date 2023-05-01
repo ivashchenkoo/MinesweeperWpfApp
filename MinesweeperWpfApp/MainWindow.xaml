@@ -74,7 +74,8 @@
                      HorizontalAlignment="Left"
                      VerticalAlignment="Center"
                      Grid.Column="3"
-                     Grid.Row="0"/>
+                     Grid.Row="0"
+                     TextChanged="Dimension_TextChanged"/>
 
             <TextBlock Margin="5"
                        HorizontalAlignment="Right"
@@ -90,7 +91,8 @@
                      HorizontalAlignment="Left"
                      VerticalAlignment="Center"
                      Grid.Column="1"
-                     Grid.Row="1"/>
+                     Grid.Row="1"
+                     TextChanged="Dimension_TextChanged"/>
 
             <TextBlock Margin="5"
                        HorizontalAlignment="Right"
@@ -106,7 +108,8 @@
                      HorizontalAlignment="Left"
                      VerticalAlignment="Center"
                      Grid.Column="3"
-                     Grid.Row="1"/>
+                     Grid.Row="1"
+                     TextChanged="Dimension_TextChanged"/>
 
         </Grid>
 
