@@ -30,7 +30,7 @@
 					Description = "Expert",
 					Width = 25,
 					Height = 16,
-					MinesNumber = 160
+					MinesNumber = 130
 				}
 			};
 		}
