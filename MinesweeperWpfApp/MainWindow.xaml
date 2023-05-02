@@ -5,8 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MinesweeperWpfApp"
         mc:Ignorable="d"
-        Title="MainWindow"
-        ResizeMode="CanResize"
+        Title="Minesweeper"
+        ResizeMode="CanMinimize"
         Height="450"
         Width="800"
         SizeToContent="WidthAndHeight">
@@ -24,10 +24,8 @@
               Margin="5">
 
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -36,18 +34,20 @@
 
             <ComboBox x:Name="DifficultyComboBox"
                       Grid.Column="0"
-                      Grid.ColumnSpan="2"
                       Grid.Row="0"
+                      Width="100"
                       Margin="5"
                       SelectionChanged="DifficultyComboBox_SelectionChanged"
-                      DisplayMemberPath="Description">
+                      DisplayMemberPath="Description"
+                      HorizontalAlignment="Center">
 
             </ComboBox>
 
         </Grid>
         
         <Grid Grid.Row="0"
-              Margin="5">
+              Margin="5"
+              x:Name="TextBoxesGrid">
 
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
