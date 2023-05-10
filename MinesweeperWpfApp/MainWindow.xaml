@@ -119,19 +119,21 @@
                     Margin="10,0"
                     HorizontalAlignment="Center">
 
-            <TextBlock Width="75"
+            <TextBlock x:Name="MinesCountTextBlock"
+                       Width="75"
                        Margin="5,0"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"
                        TextAlignment="Center">
-                Mines
+                0
             </TextBlock>
 
             <Button Content="☺"
                     Click="RestartButton_Click"
                     Margin="5,0"/>
 
-            <TextBlock Width="75"
+            <TextBlock x:Name="TimerTextBlock"
+                       Width="75"
                        Margin="5,0"
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"

@@ -117,12 +117,14 @@ namespace MinesweeperWpfApp
 
 		private void UpdateButtonsGrid()
 		{
+			int tagCount = 0;
 			for (int i = 0; i < board.Height; i++)
 			{
 				for (int j = 0; j < board.Width; j++)
 				{
 					if ((string)_buttons[i, j].Tag == "Mine")
 					{
+						tagCount++;
 						_buttons[i, j].Background = _flagCellBrush;
 						_buttons[i, j].Content = "M";
 					}
@@ -145,7 +147,9 @@ namespace MinesweeperWpfApp
 					}
 				}
 			}
-		}
+
+			MinesCountTextBlock.Text = (board.MinesNumber - tagCount).ToString();
+        }
 
 		private void CellRightClickHandler(object sender, MouseButtonEventArgs e)
 		{
@@ -156,16 +160,15 @@ namespace MinesweeperWpfApp
 			Button button = (Button)sender;
 			if ((string)button.Tag != "Mine")
 			{
-				button.Background = _flagCellBrush;
-				button.Content = "M";
 				button.Tag = "Mine";
 			}
 			else
-			{
-				button.Background = _defaultCellBrush;
-				button.Content = "";
-				button.Tag = "";
+            {
+                button.Background = _defaultCellBrush;
+                button.Content = "";
+                button.Tag = "";
 			}
+			UpdateButtonsGrid();
 		}
 
 		private void CellLeftClickHandler(object sender, RoutedEventArgs e)
@@ -189,7 +192,9 @@ namespace MinesweeperWpfApp
 					_buttons[cellsHaveMines[i].RowNumber, cellsHaveMines[i].ColumnNumber].Tag = "Mine";
 				}
 				_gameOver = true;
-			}
+                MinesCountTextBlock.Text = "0";
+                MessageBox.Show("You win!");
+            }
 
 			UpdateButtonsGrid();
 
