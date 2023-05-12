@@ -6,6 +6,7 @@
         mc:Ignorable="d"
         Title="Minesweeper"
         ResizeMode="CanMinimize"
+        WindowStartupLocation="CenterScreen"
         Height="450"
         Width="800"
         SizeToContent="WidthAndHeight">
