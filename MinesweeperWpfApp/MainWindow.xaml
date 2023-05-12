@@ -89,7 +89,8 @@
                 0
             </TextBlock>
 
-            <Button Content="☺"
+            <Button x:Name="RestartButton"
+                    Content="☺"
                     Click="RestartButton_Click"
                     Margin="5,0"/>
 

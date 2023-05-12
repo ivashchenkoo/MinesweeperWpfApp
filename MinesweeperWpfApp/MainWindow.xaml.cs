@@ -25,6 +25,11 @@ namespace MinesweeperWpfApp
         const string ButtonMineContent = "X";
         const string ButtonFlagContent = "M";
 
+        // game state contents for the restart button
+        const string RestartButtonDefaultContent = "☺";
+        const string RestartButtonVictoryContent = "☻";
+        const string RestartButtonDefeatContent = "😕";
+
         // the flag tag
         const string FlagTag = "Mine";
 
@@ -135,6 +140,8 @@ namespace MinesweeperWpfApp
         {
             // reset the game state
             _gameOver = false;
+            // set the default content for the restart button
+            RestartButton.Content = RestartButtonDefaultContent;
             // create a new minesweeper board instance
             _board = new MinesweeperBoard(width, height, mines);
             // regenerate the buttons grid for a new board
@@ -244,6 +251,8 @@ namespace MinesweeperWpfApp
                 MinesCountTextBlock.Text = "0";
                 // set the game state as GameOver
                 _gameOver = true;
+                // set the victory content for the restart button
+                RestartButton.Content = RestartButtonVictoryContent;
 
                 MessageBox.Show("You win!");
             }
@@ -258,6 +267,8 @@ namespace MinesweeperWpfApp
                 button.Background = _explodedCellBrush;
                 // set the game state as GameOver
                 _gameOver = true;
+                // set the defeat content for the restart button
+                RestartButton.Content = RestartButtonDefeatContent;
 
                 MessageBox.Show("Game over!", "Minesweeper");
             }
