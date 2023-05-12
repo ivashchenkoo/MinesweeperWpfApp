@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Controls;
@@ -14,21 +13,44 @@ namespace MinesweeperWpfApp
     /// </summary>
     public partial class MainWindow : Window
     {
+        #region Fields
+        // max board size for the custom difficulty
+        const int MaxBoardSize = 100;
+
+        // width and height of buttons to generate
+        const int ButtonSize = 20;
+
+        // contents of buttons to generate
+        const string ButtonDefaultContent = "";
+        const string ButtonMineContent = "X";
+        const string ButtonFlagContent = "M";
+
+        // the flag tag
+        const string FlagTag = "Mine";
+
+        // background colors of buttons to generate
         private readonly SolidColorBrush _openedCellBrush = new SolidColorBrush(Color.FromRgb(190, 190, 190));
         private readonly SolidColorBrush _flagCellBrush = new SolidColorBrush(Color.FromRgb(255, 212, 138));
         private readonly SolidColorBrush _explodedCellBrush = new SolidColorBrush(Color.FromRgb(255, 71, 71));
         private readonly SolidColorBrush _defaultCellBrush = new SolidColorBrush(Color.FromRgb(221, 221, 221));
-        const int buttonSize = 20;
 
+        // a tag for tracking the state of the game 
         private bool _gameOver;
-        private MinesweeperBoard board;
+        // the minesweeper board
+        private MinesweeperBoard _board;
+        // the buttons grid
         private Button[,] _buttons;
+        #endregion
 
+        // constructor
         public MainWindow()
         {
             InitializeComponent();
 
+            // get default difficulties
             var standardDifficulties = Difficulty.GetDefaultDifficulties();
+
+            // add "Custom" difficulty to the difficulties array
             Difficulty[] difficulties = new Difficulty[standardDifficulties.Length + 1];
             for (int i = 0; i < standardDifficulties.Length; i++)
             {
@@ -36,25 +58,342 @@ namespace MinesweeperWpfApp
             }
             difficulties[standardDifficulties.Length] = new Difficulty
             {
-                Description = "Custom",
-                Height = 12,
-                Width = 12,
-                MinesNumber = 20
+                Description = "Custom"
             };
-            DifficultyComboBox.ItemsSource = difficulties;
-            DifficultyComboBox.SelectedIndex = 0;
 
-            DimensionalGrid.Visibility = Visibility.Collapsed;
+            // set the difficulties array as itemsource for the DifficultyCombox
+            DifficultyComboBox.ItemsSource = difficulties;
+
+            // set the selection for the DifficultyCombox
+            DifficultyComboBox.SelectedIndex = 0;
         }
 
-        private void RestartButton_Click(object sender, RoutedEventArgs e)
+        #region Methods
+        /// <summary>
+        /// Generates the buttons grid for the minesweeper board
+        /// </summary>
+        private void GenerateButtonGrid()
         {
+            // clear the MinesweeperBoardGrid
+            MinesweeperBoardGrid.Children.Clear();
+
+            // create the 2D array of the type Button with the board dimensions
+            _buttons = new Button[_board.Height, _board.Width];
+
+            // create the grid and initialize its rows and columns
+            Grid grid = new Grid();
+            for (int x = 0; x < _board.Height; x++)
+            {
+                grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            }
+            for (int y = 0; y < _board.Width; y++)
+            {
+                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            }
+
+            // fill the 2D buttons array with buttons, each on the unique position in the grid
+            for (int i = 0; i < _board.Height; i++)
+            {
+                for (int j = 0; j < _board.Width; j++)
+                {
+                    _buttons[i, j] = new Button
+                    {
+                        // set the button size and aligment
+                        Width = ButtonSize,
+                        Height = ButtonSize,
+                        HorizontalAlignment = HorizontalAlignment.Left,
+                        VerticalAlignment = VerticalAlignment.Top
+                    };
+
+                    // set event handlers for the button
+                    _buttons[i, j].PreviewMouseLeftButtonUp += CellLeftClickHandler;
+                    _buttons[i, j].PreviewMouseRightButtonUp += CellRightClickHandler;
+
+                    // set the defualt background color for the button
+                    _buttons[i, j].Background = _defaultCellBrush;
+
+                    // set the button position in the grid
+                    Grid.SetRow(_buttons[i, j], i);
+                    Grid.SetColumn(_buttons[i, j], j);
+
+                    // add the button to the grid
+                    grid.Children.Add(_buttons[i, j]);
+                }
+            }
+
+            // add the generated grid to the MinesweeperBoardGrid
+            MinesweeperBoardGrid.Children.Add(grid);
+        }
+
+        /// <summary>
+        /// Restarts the game
+        /// </summary>
+        /// <param name="width">The width of the new minesweeper board</param>
+        /// <param name="height">The height of the new minesweeper board</param>
+        /// <param name="mines">The mines count of the new minesweeper board</param>
+        private void RestartGame(int width, int height, int mines)
+        {
+            // reset the game state
+            _gameOver = false;
+            // create a new minesweeper board instance
+            _board = new MinesweeperBoard(width, height, mines);
+            // regenerate the buttons grid for a new board
+            GenerateButtonGrid();
+            // set the mines count to the Text property of the MinesCountTextbox 
+            MinesCountTextBlock.Text = _board.MinesNumber.ToString();
+        }
+
+        /// <summary>
+        /// Restarts the game
+        /// </summary>
+        /// <param name="difficulty">The instance of the Difficulty class</param>
+        private void RestartGame(Difficulty difficulty) => RestartGame(difficulty.Width, difficulty.Height, difficulty.MinesNumber);
+
+        /// <summary>
+        /// Updates the buttons grid with the state of the board cells
+        /// </summary>
+        private void UpdateButtonsGrid()
+        {
+            // initialize a variable to count the cells with the mine flag
+            int tagCount = 0;
+
+            // go through all the buttons
+            for (int i = 0; i < _board.Height; i++)
+            {
+                for (int j = 0; j < _board.Width; j++)
+                {
+                    // if a button has the mine flag
+                    if ((string)_buttons[i, j].Tag == FlagTag)
+                    {
+                        // increase the tagCount variable by 1
+                        tagCount++;
+                        // set the flag backround color for the button
+                        _buttons[i, j].Background = _flagCellBrush;
+                        // set the flag content for the button
+                        _buttons[i, j].Content = ButtonFlagContent;
+                    }
+
+                    // if the cell with specified x and y is open
+                    if (_board.Grid[i, j].IsOpen)
+                    {
+                        // set the open background color for the button
+                        _buttons[i, j].Background = _openedCellBrush;
+                        // if the cell with specified x and y has mine
+                        if (_board.Grid[i, j].HasMine)
+                        {
+                            // set the mine content for the button
+                            _buttons[i, j].Content = ButtonMineContent;
+                        }
+                        // if NumberOfMinesAround property is greater than zero
+                        else if (_board.Grid[i, j].NumberOfMinesAround > 0)
+                        {
+                            // set cell NumberOfMinesAround as button content
+                            _buttons[i, j].Content = _board.Grid[i, j].NumberOfMinesAround;
+                        }
+                        else
+                        {
+                            // set the default content for the button if NumberOfMinesAround property
+                            _buttons[i, j].Content = ButtonDefaultContent;
+                        }
+                    }
+                }
+            }
+
+            // update the MinesCountTextBlock text with the difference between the total number of mines on the board and the tagCount variable
+            MinesCountTextBlock.Text = (_board.MinesNumber - tagCount).ToString();
+        }
+        #endregion
+
+        #region EventHandlers
+        /// <summary>
+        /// The event handler for the LMB click
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void CellLeftClickHandler(object sender, RoutedEventArgs e)
+        {
+            // cast the sender parameter as the Button
+            Button button = (Button)sender;
+
+            // return if the game state is GameOver or the button has the flag tag
+            if (_gameOver || (string)button.Tag == FlagTag)
+            {
+                return;
+            }
+
+            // initialize x and y variables from the row and column of the button
+            int x = Grid.GetRow(button);
+            int y = Grid.GetColumn(button);
+
+            // get a board cell with x and y coordinates
+            Cell cell = _board.Grid[x, y];
+            // open cell
+            _board.OpenCell(cell);
+
+            // if the board is complete
+            if (_board.IsBoardComplete)
+            {
+                // set the flag tag for all buttons that correspond to cells with mines
+                var cellsHaveMines = _board.GetCellsWithMines();
+                for (int i = 0; i < cellsHaveMines.Length; i++)
+                {
+                    _buttons[cellsHaveMines[i].RowNumber, cellsHaveMines[i].ColumnNumber].Tag = FlagTag;
+                }
+
+                // set the text of the MinesCountTextBlock as zero
+                MinesCountTextBlock.Text = "0";
+                // set the game state as GameOver
+                _gameOver = true;
+
+                MessageBox.Show("You win!");
+            }
+
+            // update the buttons grid
+            UpdateButtonsGrid();
+
+            // if the cell has mine
+            if (cell.HasMine)
+            {
+                // set the exploded background color for the button
+                button.Background = _explodedCellBrush;
+                // set the game state as GameOver
+                _gameOver = true;
+
+                MessageBox.Show("Game over!", "Minesweeper");
+            }
+        }
+
+        /// <summary>
+        /// The event handler for the RMB click
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void CellRightClickHandler(object sender, MouseButtonEventArgs e)
+        {
+            // return if the game state is GameOver
+            if (_gameOver)
+            {
+                return;
+            }
+
+            // cast the sender parameter as the Button
+            Button button = (Button)sender;
+
+            // if the button has the flag tag
+            if ((string)button.Tag == FlagTag)
+            {
+                // set the default background, content and tag for the button
+                button.Background = _defaultCellBrush;
+                button.Content = ButtonDefaultContent;
+                button.Tag = string.Empty;
+            }
+            else
+            {
+                // set the flag tag for the button
+                button.Tag = FlagTag;
+            }
+
+            // update the buttons grid
+            UpdateButtonsGrid();
+        }
+
+        /// <summary>
+        /// The event handler for the DifficultyComboBox selection changed
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void DifficultyComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // cast the selected combobox item to a Difficulty class
             Difficulty difficulty = (Difficulty)DifficultyComboBox.SelectedItem;
 
+            // if "Custom" difficulty is selected
             if (difficulty.Description == "Custom")
             {
+                // set dimensions textboxes visibility as visible
+                DimensionalGrid.Visibility = Visibility.Visible;
+                return;
+            }
+            else
+            {
+                // set dimensions textboxes visibility as collapsed
+                DimensionalGrid.Visibility = Visibility.Collapsed;
+            }
+
+            // restart the game
+            RestartGame(difficulty);
+        }
+
+        /// <summary>
+        /// The event handler for the dimensions textboxes text changed
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Dimension_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            // cast the sender parameter as the TextBox
+            TextBox textBox = (TextBox)sender;
+
+            // remove all characters except numbers from the text
+            string text = Regex.Match(textBox.Text, "[0-9]+").Value;
+
+            // try to parse the received text as an integer
+            if (int.TryParse(text, out int digits))
+            {
+                // if the parsed value is greater than MaxBoardSize
+                if (digits > MaxBoardSize)
+                {
+                    // set the textbox text as MaxBoardSize
+                    textBox.Text = MaxBoardSize.ToString();
+                    // set caret to end of text
+                    textBox.SelectionStart = textBox.Text.Length;
+                    return;
+                }
+                // if the parsed value is less than or equal to zero
+                else if (digits <= 0)
+                {
+                    // set the textbox text as 1
+                    textBox.Text = "1";
+                    // set caret to end of text
+                    textBox.SelectionStart = textBox.Text.Length;
+                    return;
+                }
+
+                // if dimensions textboxes are not empty
                 if (WidthTextBox.Text != string.Empty && HeightTextBox.Text != string.Empty && MinesTextBox.Text != string.Empty)
                 {
+                    // fill in the difficulty dimensionals with textbox`s texts
+                    int width = int.Parse(WidthTextBox.Text);
+                    int height = int.Parse(HeightTextBox.Text);
+                    int mines = int.Parse(MinesTextBox.Text);
+
+                    // calculate the possible number of mines for the specified dimensions
+                    int possibleMines = (int)Math.Ceiling(width * height * 0.4 + 0.5);
+                    // set the max mines number to the mines textbox
+                    MinesTextBox.Text = Math.Min(mines, possibleMines).ToString();
+                    // set caret to end of text
+                    textBox.SelectionStart = textBox.Text.Length;
+                }
+            }
+        }
+
+        /// <summary>
+        /// The event handler of the restart button click
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void RestartButton_Click(object sender, RoutedEventArgs e)
+        {
+            // cast the selected combobox item to a Difficulty class
+            Difficulty difficulty = (Difficulty)DifficultyComboBox.SelectedItem;
+
+            // if "Custom" difficulty is selected
+            if (difficulty.Description == "Custom")
+            {
+                // if dimension textboxes are not empty
+                if (WidthTextBox.Text != string.Empty && HeightTextBox.Text != string.Empty && MinesTextBox.Text != string.Empty)
+                {
+                    // fill in the difficulty dimensionals with textbox`s texts
                     difficulty.Width = int.Parse(WidthTextBox.Text);
                     difficulty.Height = int.Parse(HeightTextBox.Text);
                     difficulty.MinesNumber = int.Parse(MinesTextBox.Text);
@@ -65,229 +404,9 @@ namespace MinesweeperWpfApp
                 }
             }
 
+            // restart the game with the selected difficulty
             RestartGame(difficulty);
         }
-
-        private void RestartGame(int width, int height, int mines)
-        {
-            _gameOver = false;
-            board = new MinesweeperBoard(width, height, mines);
-            GenerateButtonGrid();
-            MinesCountTextBlock.Text = board.MinesNumber.ToString();
-        }
-
-        private void RestartGame(Difficulty difficulty) => RestartGame(difficulty.Width, difficulty.Height, difficulty.MinesNumber);
-
-        private void GenerateButtonGrid()
-        {
-            MinesweeperBoardGrid.Children.Clear();
-
-            _buttons = new Button[board.Height, board.Width];
-            Grid grid = new Grid();
-            for (int x = 0; x < board.Height; x++)
-            {
-                grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            }
-            for (int y = 0; y < board.Width; y++)
-            {
-                grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-            }
-            for (int i = 0; i < board.Height; i++)
-            {
-                for (int j = 0; j < board.Width; j++)
-                {
-                    _buttons[i, j] = new Button
-                    {
-                        Width = buttonSize,
-                        Height = buttonSize,
-                        HorizontalAlignment = HorizontalAlignment.Left,
-                        VerticalAlignment = VerticalAlignment.Top
-                    };
-
-                    _buttons[i, j].PreviewMouseLeftButtonUp += CellLeftClickHandler;
-                    _buttons[i, j].PreviewMouseRightButtonUp += CellRightClickHandler;
-                    _buttons[i, j].Background = _defaultCellBrush;
-
-                    Grid.SetRow(_buttons[i, j], i);
-                    Grid.SetColumn(_buttons[i, j], j);
-                    grid.Children.Add(_buttons[i, j]);
-                }
-            }
-
-            MinesweeperBoardGrid.Children.Add(grid);
-        }
-
-        private void UpdateButtonsGrid()
-        {
-            int tagCount = 0;
-            for (int i = 0; i < board.Height; i++)
-            {
-                for (int j = 0; j < board.Width; j++)
-                {
-                    if ((string)_buttons[i, j].Tag == "Mine")
-                    {
-                        tagCount++;
-                        _buttons[i, j].Background = _flagCellBrush;
-                        _buttons[i, j].Content = "M";
-                    }
-
-                    if (board.Grid[i, j].IsOpen)
-                    {
-                        _buttons[i, j].Background = _openedCellBrush;
-                        if (board.Grid[i, j].HasMine)
-                        {
-                            _buttons[i, j].Content = "X";
-                        }
-                        else if (board.Grid[i, j].IsOpen && board.Grid[i, j].NumberOfMinesAround > 0)
-                        {
-                            _buttons[i, j].Content = board.Grid[i, j].NumberOfMinesAround;
-                        }
-                        else
-                        {
-                            _buttons[i, j].Content = "";
-                        }
-                    }
-                }
-            }
-
-            MinesCountTextBlock.Text = (board.MinesNumber - tagCount).ToString();
-        }
-
-        private void CellRightClickHandler(object sender, MouseButtonEventArgs e)
-        {
-            if (_gameOver)
-            {
-                return;
-            }
-            Button button = (Button)sender;
-            if ((string)button.Tag != "Mine")
-            {
-                button.Tag = "Mine";
-            }
-            else
-            {
-                button.Background = _defaultCellBrush;
-                button.Content = "";
-                button.Tag = "";
-            }
-            UpdateButtonsGrid();
-        }
-
-        private void CellLeftClickHandler(object sender, RoutedEventArgs e)
-        {
-            Button button = (Button)sender;
-            if (_gameOver || (string)button.Tag == "Mine")
-            {
-                return;
-            }
-            int x = Grid.GetRow(button);
-            int y = Grid.GetColumn(button);
-
-            Cell cell = board.Grid[x, y];
-            board.OpenCell(cell);
-
-            if (board.IsBoardComplete)
-            {
-                var cellsHaveMines = board.GetCellsWithMines();
-                for (int i = 0; i < cellsHaveMines.Length; i++)
-                {
-                    _buttons[cellsHaveMines[i].RowNumber, cellsHaveMines[i].ColumnNumber].Tag = "Mine";
-                }
-                _gameOver = true;
-                MinesCountTextBlock.Text = "0";
-                MessageBox.Show("You win!");
-            }
-
-            UpdateButtonsGrid();
-
-            if (cell.HasMine)
-            {
-                button.Background = _explodedCellBrush;
-                MessageBox.Show("Game over!", "Minesweeper");
-                _gameOver = true;
-            }
-        }
-
-        private void PrintBoard(MinesweeperBoard board)
-        {
-            Debug.WriteLine(CreateSeparator(board.Width + 1));
-            for (int i = 0; i < board.Height; i++)
-            {
-                for (int j = 0; j < board.Width; j++)
-                {
-                    Debug.Write("|");
-                    if (board.Grid[i, j].HasMine)
-                    {
-                        Debug.Write(" o ");
-                    }
-                    else if (board.Grid[i, j].IsOpen)
-                    {
-                        Debug.Write(" . ");
-                    }
-                    else if (board.Grid[i, j].NumberOfMinesAround > 0)
-                    {
-                        Debug.Write($" {board.Grid[i, j].NumberOfMinesAround} ");
-                    }
-                    else
-                    {
-                        Debug.Write("   ");
-                    }
-                }
-                Debug.WriteLine("|");
-                Debug.WriteLine(CreateSeparator(board.Width + 1));
-            }
-            Debug.WriteLine("");
-        }
-
-        private static string CreateSeparator(int verticalSeparatorsNumber)
-        {
-            return string.Join("---", new string('+', verticalSeparatorsNumber).ToCharArray());
-        }
-
-        private void DifficultyComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            Difficulty difficulty = (Difficulty)DifficultyComboBox.SelectedItem;
-
-            if (difficulty.Description == "Custom")
-            {
-                DimensionalGrid.Visibility = Visibility.Visible;
-                return;
-            }
-            else
-            {
-                DimensionalGrid.Visibility = Visibility.Collapsed;
-            }
-
-            RestartGame(difficulty);
-        }
-
-        private void Dimension_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            TextBox textBox = (TextBox)sender;
-            string text = Regex.Match(textBox.Text, "[0-9]+").Value;
-            if (int.TryParse(text, out int digits))
-            {
-                if (digits > 100)
-                {
-                    textBox.Text = "100";
-                    textBox.SelectionStart = textBox.Text.Length;
-                }
-                if (digits <= 0)
-                {
-                    textBox.Text = "1";
-                    textBox.SelectionStart = textBox.Text.Length;
-                }
-
-                if (WidthTextBox.Text != string.Empty && HeightTextBox.Text != string.Empty && MinesTextBox.Text != string.Empty)
-                {
-                    int width = int.Parse(WidthTextBox.Text);
-                    int height = int.Parse(HeightTextBox.Text);
-                    int mines = int.Parse(MinesTextBox.Text);
-                    int possibleMines = (int)Math.Ceiling(width * height * 0.4 + 0.5);
-                    MinesTextBox.Text = Math.Min(mines, possibleMines).ToString();
-                    textBox.SelectionStart = textBox.Text.Length;
-                }
-            }
-        }
+        #endregion
     }
 }
