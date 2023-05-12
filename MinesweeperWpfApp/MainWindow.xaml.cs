@@ -73,6 +73,7 @@ namespace MinesweeperWpfApp
             _gameOver = false;
             board = new MinesweeperBoard(width, height, mines);
             GenerateButtonGrid();
+            MinesCountTextBlock.Text = board.MinesNumber.ToString();
         }
 
         private void RestartGame(Difficulty difficulty) => RestartGame(difficulty.Width, difficulty.Height, difficulty.MinesNumber);
