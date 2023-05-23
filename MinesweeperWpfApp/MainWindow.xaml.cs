@@ -17,6 +17,9 @@ namespace MinesweeperWpfApp
         // max board size for the custom difficulty
         const int MaxBoardSize = 100;
 
+        // the coefficient of the maximum number of mines relative to the dimensions of the board
+        const double MinesCoef = 0.4;
+
         // width and height of buttons to generate
         const int ButtonSize = 20;
 
@@ -128,6 +131,56 @@ namespace MinesweeperWpfApp
 
             // add the generated grid to the MinesweeperBoardGrid
             MinesweeperBoardGrid.Children.Add(grid);
+        }
+
+        /// <summary>
+        /// Handles the input values of the specified textbox and changes the contents of others if needed
+        /// </summary>
+        /// <param name="textBox">The textbox for handling the input data</param>
+        /// <param name="maxValue">The maximum value for the specified textBox</param>
+        private void HandleDifficultyTextboxes(TextBox textBox, int maxValue)
+        {
+            // remove all characters except numbers from the text
+            string text = Regex.Match(textBox.Text, "[0-9]+").Value;
+
+            // try to parse the received text as an integer
+            if (int.TryParse(text, out int digits))
+            {
+                // if the parsed value is greater than MaxBoardSize
+                if (digits > maxValue)
+                {
+                    // set the textbox text as MaxBoardSize
+                    textBox.Text = MaxBoardSize.ToString();
+                    // set caret to end of text
+                    textBox.SelectionStart = textBox.Text.Length;
+                    return;
+                }
+                // if the parsed value is less than or equal to zero
+                else if (digits <= 0)
+                {
+                    // set the textbox text as 1
+                    textBox.Text = "1";
+                    // set caret to end of text
+                    textBox.SelectionStart = textBox.Text.Length;
+                    return;
+                }
+
+                // if dimensions textboxes are not empty
+                if (WidthTextBox.Text != string.Empty && HeightTextBox.Text != string.Empty && MinesTextBox.Text != string.Empty)
+                {
+                    // fill in the difficulty dimensionals with textbox`s texts
+                    int width = int.Parse(WidthTextBox.Text);
+                    int height = int.Parse(HeightTextBox.Text);
+                    int mines = int.Parse(MinesTextBox.Text);
+
+                    // calculate the possible number of mines for the specified dimensions
+                    int possibleMines = (int)Math.Ceiling(width * height * MinesCoef);
+                    // set the max mines number to the mines textbox
+                    MinesTextBox.Text = Math.Min(mines, possibleMines).ToString();
+                    // set caret to end of text
+                    textBox.SelectionStart = textBox.Text.Length;
+                }
+            }
         }
 
         /// <summary>
@@ -345,47 +398,20 @@ namespace MinesweeperWpfApp
             // cast the sender parameter as the TextBox
             TextBox textBox = (TextBox)sender;
 
-            // remove all characters except numbers from the text
-            string text = Regex.Match(textBox.Text, "[0-9]+").Value;
+            HandleDifficultyTextboxes(textBox, MaxBoardSize);
+        }
 
-            // try to parse the received text as an integer
-            if (int.TryParse(text, out int digits))
-            {
-                // if the parsed value is greater than MaxBoardSize
-                if (digits > MaxBoardSize)
-                {
-                    // set the textbox text as MaxBoardSize
-                    textBox.Text = MaxBoardSize.ToString();
-                    // set caret to end of text
-                    textBox.SelectionStart = textBox.Text.Length;
-                    return;
-                }
-                // if the parsed value is less than or equal to zero
-                else if (digits <= 0)
-                {
-                    // set the textbox text as 1
-                    textBox.Text = "1";
-                    // set caret to end of text
-                    textBox.SelectionStart = textBox.Text.Length;
-                    return;
-                }
+        /// <summary>
+        /// The event handler for the mines number textbox text changed
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void MinesNumber_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            // cast the sender parameter as the TextBox
+            TextBox textBox = (TextBox)sender;
 
-                // if dimensions textboxes are not empty
-                if (WidthTextBox.Text != string.Empty && HeightTextBox.Text != string.Empty && MinesTextBox.Text != string.Empty)
-                {
-                    // fill in the difficulty dimensionals with textbox`s texts
-                    int width = int.Parse(WidthTextBox.Text);
-                    int height = int.Parse(HeightTextBox.Text);
-                    int mines = int.Parse(MinesTextBox.Text);
-
-                    // calculate the possible number of mines for the specified dimensions
-                    int possibleMines = (int)Math.Ceiling(width * height * 0.4 + 0.5);
-                    // set the max mines number to the mines textbox
-                    MinesTextBox.Text = Math.Min(mines, possibleMines).ToString();
-                    // set caret to end of text
-                    textBox.SelectionStart = textBox.Text.Length;
-                }
-            }
+            HandleDifficultyTextboxes(textBox, (int)Math.Ceiling(MaxBoardSize * MaxBoardSize * MinesCoef));
         }
 
         /// <summary>

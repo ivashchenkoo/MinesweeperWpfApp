@@ -69,7 +69,7 @@
                 <TextBox x:Name="MinesTextBox"
                          MinWidth="50"
                          Margin="5"
-                         TextChanged="Dimension_TextChanged"/>
+                         TextChanged="MinesNumber_TextChanged"/>
 
             </StackPanel>
 
