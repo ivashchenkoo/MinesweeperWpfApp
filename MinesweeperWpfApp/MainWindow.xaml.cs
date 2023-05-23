@@ -376,6 +376,11 @@ namespace MinesweeperWpfApp
             {
                 // set dimensions textboxes visibility as visible
                 DimensionalGrid.Visibility = Visibility.Visible;
+
+                // clear textboxes
+                WidthTextBox.Text = string.Empty;
+                HeightTextBox.Text = string.Empty;
+                MinesTextBox.Text = string.Empty;
                 return;
             }
             else
