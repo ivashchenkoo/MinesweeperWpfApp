@@ -61,14 +61,19 @@ namespace MinesweeperWpfApp
         {
             InitializeComponent();
 
-            _time = TimeSpan.FromMilliseconds(1);
+            // reset game time
+            _time = TimeSpan.FromSeconds(0);
 
-            _timer = new DispatcherTimer(new TimeSpan(0, 0, 1), DispatcherPriority.Normal, delegate
-            {
-                TimerTextBlock.Text = _time.ToString("m':'ss");
-                if (_time == TimeSpan.Zero) _timer.Stop();
-                _time = _time.Add(TimeSpan.FromSeconds(1));
-            }, Application.Current.Dispatcher);
+            // initialize the timer
+            _timer = new DispatcherTimer(
+                new TimeSpan(0, 0, 1), DispatcherPriority.Normal,
+                delegate
+                {
+                    TimerTextBlock.Text = _time.ToString("m':'ss");
+                    _time = _time.Add(TimeSpan.FromSeconds(1));
+                },
+                Application.Current.Dispatcher
+            );
 
             // get default difficulties
             var standardDifficulties = Difficulty.GetDefaultDifficulties();
@@ -217,8 +222,11 @@ namespace MinesweeperWpfApp
             // set the mines count to the Text property of the MinesCountTextbox 
             MinesCountTextBlock.Text = _board.MinesNumber.ToString();
 
+            // clear the timer textbox
             TimerTextBlock.Text = "0:00";
-            _time = TimeSpan.FromMilliseconds(1);
+            // reset game time
+            _time = TimeSpan.FromSeconds(0);
+            // stop the timer
             _timer.Stop();
         }
 
@@ -233,6 +241,7 @@ namespace MinesweeperWpfApp
         /// </summary>
         private void UpdateButtonsGrid()
         {
+            // start a timer when the button is pressed for the first time in a new game
             if (!_timer.IsEnabled && !_gameOver)
             {
                 _timer.Start();
@@ -330,8 +339,9 @@ namespace MinesweeperWpfApp
                 _gameOver = true;
                 // set the victory content for the restart button
                 RestartButton.Content = RestartButtonVictoryContent;
-
+                // stop the timer
                 _timer.Stop();
+
                 MessageBox.Show("You win!");
             }
 
@@ -347,8 +357,9 @@ namespace MinesweeperWpfApp
                 _gameOver = true;
                 // set the defeat content for the restart button
                 RestartButton.Content = RestartButtonDefeatContent;
-
+                // stop the timer
                 _timer.Stop();
+
                 MessageBox.Show("Game over!", "Minesweeper");
             }
         }
