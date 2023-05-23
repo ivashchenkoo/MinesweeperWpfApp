@@ -101,7 +101,7 @@
                        HorizontalAlignment="Center"
                        VerticalAlignment="Center"
                        TextAlignment="Center">
-                Timer
+                0:00
             </TextBlock>
 
         </StackPanel>

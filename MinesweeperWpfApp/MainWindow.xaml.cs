@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 using MinesweeperModel;
 
 namespace MinesweeperWpfApp
@@ -42,6 +43,11 @@ namespace MinesweeperWpfApp
         private readonly SolidColorBrush _explodedCellBrush = new SolidColorBrush(Color.FromRgb(255, 71, 71));
         private readonly SolidColorBrush _defaultCellBrush = new SolidColorBrush(Color.FromRgb(221, 221, 221));
 
+        // timer to keep track of game time
+        private readonly DispatcherTimer _timer;
+        // the current game time
+        private TimeSpan _time;
+
         // a tag for tracking the state of the game 
         private bool _gameOver;
         // the minesweeper board
@@ -54,6 +60,15 @@ namespace MinesweeperWpfApp
         public MainWindow()
         {
             InitializeComponent();
+
+            _time = TimeSpan.FromMilliseconds(1);
+
+            _timer = new DispatcherTimer(new TimeSpan(0, 0, 1), DispatcherPriority.Normal, delegate
+            {
+                TimerTextBlock.Text = _time.ToString("m':'ss");
+                if (_time == TimeSpan.Zero) _timer.Stop();
+                _time = _time.Add(TimeSpan.FromSeconds(1));
+            }, Application.Current.Dispatcher);
 
             // get default difficulties
             var standardDifficulties = Difficulty.GetDefaultDifficulties();
@@ -201,6 +216,10 @@ namespace MinesweeperWpfApp
             GenerateButtonGrid();
             // set the mines count to the Text property of the MinesCountTextbox 
             MinesCountTextBlock.Text = _board.MinesNumber.ToString();
+
+            TimerTextBlock.Text = "0:00";
+            _time = TimeSpan.FromMilliseconds(1);
+            _timer.Stop();
         }
 
         /// <summary>
@@ -214,6 +233,11 @@ namespace MinesweeperWpfApp
         /// </summary>
         private void UpdateButtonsGrid()
         {
+            if (!_timer.IsEnabled && !_gameOver)
+            {
+                _timer.Start();
+            }
+
             // initialize a variable to count the cells with the mine flag
             int tagCount = 0;
 
@@ -307,6 +331,7 @@ namespace MinesweeperWpfApp
                 // set the victory content for the restart button
                 RestartButton.Content = RestartButtonVictoryContent;
 
+                _timer.Stop();
                 MessageBox.Show("You win!");
             }
 
@@ -323,6 +348,7 @@ namespace MinesweeperWpfApp
                 // set the defeat content for the restart button
                 RestartButton.Content = RestartButtonDefeatContent;
 
+                _timer.Stop();
                 MessageBox.Show("Game over!", "Minesweeper");
             }
         }
