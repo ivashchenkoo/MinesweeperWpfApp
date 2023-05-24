@@ -32,6 +32,10 @@ namespace MinesweeperModel
         /// </summary>
         public int SafeCellsNumber { get => CellsNumber - MinesNumber; }
         /// <summary>
+        /// The number of cells that do not contain mine
+        /// </summary>
+        public int MarkedCellsNumber { get => GetMarkedCellsCount(); }
+        /// <summary>
         /// True, if all safe cells are open
         /// </summary>
         public bool IsBoardComplete { get => SafeCellsNumber == GetOpenedCellsCount(); }
@@ -182,6 +186,31 @@ namespace MinesweeperModel
         }
 
         /// <summary>
+        /// Counts cells that have been marked
+        /// </summary>
+        /// <returns>The number of marked cells</returns>
+        public int GetMarkedCellsCount()
+        {
+            // initialize the counter variable
+            int count = 0;
+
+            // go through all the cells
+            for (int i = 0; i < Height; i++)
+            {
+                for (int j = 0; j < Width; j++)
+                {
+                    // increase the variable if the cell is marked
+                    if (Grid[i, j].IsMarked)
+                    {
+                        count++;
+                    }
+                }
+            }
+
+            return count;
+        }
+
+        /// <summary>
         /// Counts cells that have been opened
         /// </summary>
         /// <returns>The number of open cells</returns>
@@ -227,6 +256,9 @@ namespace MinesweeperModel
 
             // mark the current cell as open
             currentCell.IsOpen = true;
+
+            // clear the cell mark
+            currentCell.IsMarked = false;
 
             // return if there are mines around the current cell
             if (currentCell.NumberOfMinesAround > 0)

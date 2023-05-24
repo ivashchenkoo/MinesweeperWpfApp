@@ -34,9 +34,6 @@ namespace MinesweeperWpfApp
         const string RestartButtonVictoryContent = "☻";
         const string RestartButtonDefeatContent = "😕";
 
-        // the flag tag
-        const string FlagTag = "Mine";
-
         // background colors of buttons to generate
         private readonly SolidColorBrush _openedCellBrush = new SolidColorBrush(Color.FromRgb(190, 190, 190));
         private readonly SolidColorBrush _flagCellBrush = new SolidColorBrush(Color.FromRgb(255, 212, 138));
@@ -247,24 +244,25 @@ namespace MinesweeperWpfApp
                 _timer.Start();
             }
 
-            // initialize a variable to count the cells with the mine flag
-            int tagCount = 0;
-
             // go through all the buttons
             for (int i = 0; i < _board.Height; i++)
             {
                 for (int j = 0; j < _board.Width; j++)
                 {
                     // if a button has the mine flag
-                    if ((string)_buttons[i, j].Tag == FlagTag)
+                    if (_board.Grid[i, j].IsMarked)
                     {
-                        // increase the tagCount variable by 1
-                        tagCount++;
                         // set the flag backround color for the button
                         _buttons[i, j].Background = _flagCellBrush;
                         // set the flag content for the button
                         _buttons[i, j].Content = ButtonFlagContent;
+                        continue;
                     }
+
+                    // set the default backround color for the button
+                    _buttons[i, j].Background = _defaultCellBrush;
+                    // set the default content for the button
+                    _buttons[i, j].Content = ButtonDefaultContent;
 
                     // if the cell with specified x and y is open
                     if (_board.Grid[i, j].IsOpen)
@@ -292,8 +290,8 @@ namespace MinesweeperWpfApp
                 }
             }
 
-            // update the MinesCountTextBlock text with the difference between the total number of mines on the board and the tagCount variable
-            MinesCountTextBlock.Text = (_board.MinesNumber - tagCount).ToString();
+            // update the MinesCountTextBlock text with the difference between the total number of mines on the board and the marked cells number
+            MinesCountTextBlock.Text = (_board.MinesNumber - _board.MarkedCellsNumber).ToString();
         }
         #endregion
 
@@ -305,14 +303,14 @@ namespace MinesweeperWpfApp
         /// <param name="e"></param>
         private void CellLeftClickHandler(object sender, RoutedEventArgs e)
         {
-            // cast the sender parameter as the Button
-            Button button = (Button)sender;
-
             // return if the game state is GameOver or the button has the flag tag
-            if (_gameOver || (string)button.Tag == FlagTag)
+            if (_gameOver)
             {
                 return;
             }
+
+            // cast the sender parameter as the Button
+            Button button = (Button)sender;
 
             // initialize x and y variables from the row and column of the button
             int x = Grid.GetRow(button);
@@ -320,6 +318,12 @@ namespace MinesweeperWpfApp
 
             // get a board cell with x and y coordinates
             Cell cell = _board.Grid[x, y];
+
+            if (cell.IsMarked)
+            {
+                return;
+            }
+
             // open cell
             _board.OpenCell(cell);
 
@@ -330,7 +334,7 @@ namespace MinesweeperWpfApp
                 var cellsHaveMines = _board.GetCellsWithMines();
                 for (int i = 0; i < cellsHaveMines.Length; i++)
                 {
-                    _buttons[cellsHaveMines[i].RowNumber, cellsHaveMines[i].ColumnNumber].Tag = FlagTag;
+                    cellsHaveMines[i].IsMarked = true;
                 }
 
                 // set the text of the MinesCountTextBlock as zero
@@ -380,19 +384,12 @@ namespace MinesweeperWpfApp
             // cast the sender parameter as the Button
             Button button = (Button)sender;
 
-            // if the button has the flag tag
-            if ((string)button.Tag == FlagTag)
-            {
-                // set the default background, content and tag for the button
-                button.Background = _defaultCellBrush;
-                button.Content = ButtonDefaultContent;
-                button.Tag = string.Empty;
-            }
-            else
-            {
-                // set the flag tag for the button
-                button.Tag = FlagTag;
-            }
+            // initialize x and y variables from the row and column of the button
+            int x = Grid.GetRow(button);
+            int y = Grid.GetColumn(button);
+
+            // reversing the state of the cell mark
+            _board.Grid[x, y].IsMarked = !_board.Grid[x, y].IsMarked;
 
             // update the buttons grid
             UpdateButtonsGrid();

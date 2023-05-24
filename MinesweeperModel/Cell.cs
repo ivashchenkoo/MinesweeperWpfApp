@@ -26,6 +26,24 @@
         /// </summary>
         public int NumberOfMinesAround { get; set; }
 
+        // field that contains the value of the IsMarked property
+        private bool _isMarked;
+        /// <summary>
+        /// Indicates whether the cell is marked as the cell with a mine
+        /// </summary>
+        public bool IsMarked
+        {
+            get => _isMarked;
+            set
+            {
+                _isMarked = value;
+                if (IsOpen)
+                {
+                    _isMarked = false;
+                }
+            }
+        }
+
         // constructor
         public Cell(int x, int y)
         {
