@@ -93,7 +93,9 @@
             <Button x:Name="RestartButton"
                     Content="☺"
                     Click="RestartButton_Click"
-                    Margin="5,0"/>
+                    Margin="5,0"
+                    Width="20"
+                    Height="20"/>
 
             <TextBlock x:Name="TimerTextBlock"
                        Width="75"
