@@ -163,11 +163,11 @@ namespace MinesweeperWpfApp
             // try to parse the received text as an integer
             if (int.TryParse(text, out int digits))
             {
-                // if the parsed value is greater than MaxBoardSize
+                // if the parsed value is greater than maxValue
                 if (digits > maxValue)
                 {
-                    // set the textbox text as MaxBoardSize
-                    textBox.Text = MaxBoardSize.ToString();
+                    // set the textbox text as maxValue
+                    textBox.Text = maxValue.ToString();
                     // set caret to end of text
                     textBox.SelectionStart = textBox.Text.Length;
                     return;
