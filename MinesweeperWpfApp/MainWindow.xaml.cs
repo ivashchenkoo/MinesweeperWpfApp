@@ -318,7 +318,7 @@ namespace MinesweeperWpfApp
         /// <param name="e"></param>
         private void CellLeftClickHandler(object sender, RoutedEventArgs e)
         {
-            // return if the game state is GameOver or the button has the flag tag
+            // return if the game state is GameOver
             if (_gameOver)
             {
                 return;
@@ -330,6 +330,7 @@ namespace MinesweeperWpfApp
             // get a board cell from sender
             Cell cell = GetCellFromGridButton(button);
 
+            // return if the cell is marked
             if (cell.IsMarked)
             {
                 return;
