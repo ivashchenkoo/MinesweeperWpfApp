@@ -95,6 +95,21 @@ namespace MinesweeperWpfApp
 
         #region Methods
         /// <summary>
+        /// Gets the grid cell from the grid button
+        /// </summary>
+        /// <param name="button"></param>
+        /// <returns>The cell</returns>
+        private Cell GetCellFromGridButton(Button button)
+        {
+            // initialize x and y variables from the row and column of the button
+            int x = Grid.GetRow(button);
+            int y = Grid.GetColumn(button);
+
+            // get a board cell with x and y coordinates
+            return _board.Grid[x, y];
+        }
+
+        /// <summary>
         /// Generates the buttons grid for the minesweeper board
         /// </summary>
         private void GenerateButtonGrid()
@@ -312,12 +327,8 @@ namespace MinesweeperWpfApp
             // cast the sender parameter as the Button
             Button button = (Button)sender;
 
-            // initialize x and y variables from the row and column of the button
-            int x = Grid.GetRow(button);
-            int y = Grid.GetColumn(button);
-
-            // get a board cell with x and y coordinates
-            Cell cell = _board.Grid[x, y];
+            // get a board cell from sender
+            Cell cell = GetCellFromGridButton(button);
 
             if (cell.IsMarked)
             {
@@ -346,7 +357,7 @@ namespace MinesweeperWpfApp
                 // stop the timer
                 _timer.Stop();
 
-                MessageBox.Show("You win!");
+                MessageBox.Show("You win!", "Minesweeper");
             }
 
             // update the buttons grid
@@ -381,15 +392,11 @@ namespace MinesweeperWpfApp
                 return;
             }
 
-            // cast the sender parameter as the Button
-            Button button = (Button)sender;
-
-            // initialize x and y variables from the row and column of the button
-            int x = Grid.GetRow(button);
-            int y = Grid.GetColumn(button);
+            // get a board cell from sender
+            Cell cell = GetCellFromGridButton((Button)sender);
 
             // reversing the state of the cell mark
-            _board.Grid[x, y].IsMarked = !_board.Grid[x, y].IsMarked;
+            cell.IsMarked = !cell.IsMarked;
 
             // update the buttons grid
             UpdateButtonsGrid();
